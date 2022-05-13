@@ -2,22 +2,32 @@
 
 ## Dataset
 
-### Collect the data
+Data is being labeled using labelme and converted to coco
 
-
-
-### Label
-
-Data is being labeled using labelme
+create classes.txt
 
 ```
+__ignore__
+ball
+net
+```
 
+```
+# start label
+labelme  ~/Downloads/night/night_train --labels  ~/Downloads/night/classes.txt --nodata
+
+# convert to coco
+cd labelme/examples/instance_segmentation
+./labelme2coco.py ~/Downloads/night/ ~/Downloads/night_labels --labels ~/Downloads/night/classes.txt 
 ```
 
 
 ### Training
 
-
+```
+bash run_docker.sh
+python train.py
+```
 
 
 

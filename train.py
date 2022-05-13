@@ -77,15 +77,18 @@ lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                step_size=3,
                                                gamma=0.1)
 
-num_epochs = 10
+num_epochs = 20
 
+train_iter = 0
+eval_iter = 0
+metric_logger = utils.TensorboardLogger(log_dir="./log", start_iter=0, delimiter=" ")
 for epoch in range(num_epochs):
     # train for one epoch, printing every 10 iterations
-    train_one_epoch(model, optimizer, train_data_loader, device, epoch, print_freq=10)
+    train_iter = train_one_epoch(model, optimizer, train_data_loader, device, epoch, print_freq=10, iter=train_iter, metric_logger=metric_logger)
     # update the learning rate
     lr_scheduler.step()
     # evaluate on the test dataset
-    evaluate(model, test_data_loader, device=device)
+    _, eval_iter = evaluate(model, test_data_loader, device=device, metric_logger = metric_logger, iter=eval_iter)
 
 
 # test
