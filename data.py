@@ -55,6 +55,7 @@ class CocoDataset(torch.utils.data.Dataset):
 
         labels = [obj["category_id"] for obj in anns_obj]
         labels = [self.json_category_id_to_contiguous_id[c] for c in labels]
+        labels = torch.tensor(labels)
 
         #labels = torch.ones(len(anns_obj), dtype=torch.int64)
         masks = torch.as_tensor(masks, dtype=torch.uint8)

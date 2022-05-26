@@ -59,6 +59,7 @@ class CocoEvaluator(object):
         for iou_type, coco_eval in self.coco_eval.items():
             print("IoU metric: {}".format(iou_type))
             coco_eval.summarize()
+            # use IoU=0.75      | area=   all | maxDets=100 as final score
             self.stats.append(coco_eval.stats[2])
 
     def prepare(self, predictions, iou_type):
