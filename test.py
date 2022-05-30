@@ -20,7 +20,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 num_classes = len(utils.coco_names)
 
-MODEL_PATH="./best/best.pth"
+MODEL_PATH="./best_night_morning_aug/best.pth"
 
 # get the model using our helper function
 model = get_instance_segmentation_model(num_classes)
@@ -38,11 +38,12 @@ def infer_one_img(model, img):
     result = utils.draw_segmentation_map(orig_image, masks, boxes, labels)
     return result
 
-cap = cv2.VideoCapture("./backyard/backyard.mp4")
+#cap = cv2.VideoCapture("./backyard/backyard.mp4")
+cap = cv2.VideoCapture("./tenniscourt.mp4")
 flag, frame = cap.read()
 size = (int(cap.get(3)), int(cap.get(4)))
 
-vw = cv2.VideoWriter('result.avi', 
+vw = cv2.VideoWriter('result_tc_aug.avi', 
                          cv2.VideoWriter_fourcc(*'MJPG'),
                          10, size)
 while flag:

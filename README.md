@@ -32,7 +32,11 @@ python train.py
 
 
 
-### Metric
+### Test
+
+```
+python test.py
+```
 
 
 

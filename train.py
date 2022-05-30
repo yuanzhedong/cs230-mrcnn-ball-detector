@@ -75,7 +75,7 @@ lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                step_size=3,
                                                gamma=0.1)
 
-num_epochs = 50
+num_epochs = 20
 
 train_iter = 0
 eval_iter = 0

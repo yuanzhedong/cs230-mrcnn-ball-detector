@@ -181,8 +181,6 @@ def evaluate(model, data_loader, device, metric_logger, iter, checkpointer):
     # accumulate predictions from all images
     coco_evaluator.accumulate()
     coco_evaluator.summarize()
-    import pdb
-    pdb.set_trace()
     box_mAP = coco_evaluator.stats[-2] #
     segm_mAP = coco_evaluator.stats[-1]
     curr_avg_loss = metric_logger.loss.global_avg

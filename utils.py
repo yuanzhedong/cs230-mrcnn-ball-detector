@@ -17,8 +17,17 @@ coco_names=["_ignore", "ball", "net"]
 COLORS = np.random.uniform(0, 255, size=(len(coco_names), 3))
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
+# def get_transform(train):
+#     transforms = []
+#     transforms.append(T.ToTensor())
+#     if train:
+#         transforms.append(T.RandomHorizontalFlip(0.5))
+#     return T.Compose(transforms)
+
 def get_transform(train):
     transforms = []
+    if train:
+        transforms.append(T.AugTransforms())
     transforms.append(T.ToTensor())
     if train:
         transforms.append(T.RandomHorizontalFlip(0.5))
