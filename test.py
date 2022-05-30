@@ -1,31 +1,53 @@
+import torch
+from model import get_instance_segmentation_model
+import utils
+from torchvision.transforms import functional as F
 
+from statistics import mode
+import torch
+import cv2
+import random
+import numpy as np
+import transforms as T
 
+from torch.optim.lr_scheduler import StepLR
+from model import get_instance_segmentation_model
+from data import CocoDataset
+from engine import train_one_epoch, evaluate
+import utils
 
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-def get_outputs(image, model, threshold):
-    with torch.no_grad():
-        # forward pass of the image through the modle
-        outputs = model([image.to(device)])
-    
-    # get all the scores
-    scores = list(outputs[0]['scores'].detach().cpu().numpy())
-    # index of those scores which are above a certain threshold
-    thresholded_preds_inidices = [scores.index(i) for i in scores if i > threshold]
-    thresholded_preds_count = len(thresholded_preds_inidices)
-    # get the masks
-    masks = (outputs[0]['masks']>0.5).squeeze().detach().cpu().numpy()
-    # discard masks for objects which are below threshold
-    masks = masks[:thresholded_preds_count]
-    # get the bounding boxes, in (x1, y1), (x2, y2) format
-    boxes = [[(int(i[0]), int(i[1])), (int(i[2]), int(i[3]))]  for i in outputs[0]['boxes'].detach().cpu()]
-    # discard bounding boxes below threshold value
-    boxes = boxes[:thresholded_preds_count]
-    # get the classes labels
-    labels = [coco_names[i] for i in outputs[0]['labels']]
-    return masks, boxes, labels
+num_classes = len(utils.coco_names)
 
-img, _ = test_dataset[1]
-# put the model in evaluation mode
+MODEL_PATH="./best_night_morning_aug/best.pth"
+
+# get the model using our helper function
+model = get_instance_segmentation_model(num_classes)
+checkpointer = utils.Checkpointer(model)
+checkpointer.load(MODEL_PATH)
+#model.load_state_dict(torch.load(PATH))
+model = checkpointer.model
 model.eval()
-masks, boxes, labels = get_outputs(img, model, 0.965)
-result = draw_segmentation_map(orig_image, masks, boxes, labels)
+
+model.to(device)
+
+def infer_one_img(model, img):    
+    masks, boxes, labels = utils.get_outputs(img, model, 0.965)
+    orig_image = img.mul(255).permute(1, 2, 0).byte().numpy()
+    result = utils.draw_segmentation_map(orig_image, masks, boxes, labels)
+    return result
+
+#cap = cv2.VideoCapture("./backyard/backyard.mp4")
+cap = cv2.VideoCapture("./tenniscourt.mp4")
+flag, frame = cap.read()
+size = (int(cap.get(3)), int(cap.get(4)))
+
+vw = cv2.VideoWriter('result_tc_aug.avi', 
+                         cv2.VideoWriter_fourcc(*'MJPG'),
+                         10, size)
+while flag:
+    res = infer_one_img(model, F.to_tensor(frame))
+    #cv2.imshow("res", res)
+    vw.write(res)
+    flag, frame = cap.read()

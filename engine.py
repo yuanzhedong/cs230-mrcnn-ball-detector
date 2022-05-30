@@ -68,7 +68,7 @@ def _get_iou_types(model):
     return iou_types
 
 import numpy as np
-coco_names=["_ignore", "ball"]
+coco_names=["_ignore", "ball", "net"]
 COLORS = np.random.uniform(0, 255, size=(len(coco_names), 3))
 
 def get_outputs(outputs, threshold):
@@ -121,7 +121,7 @@ def draw_segmentation_map(image, masks, boxes, labels):
     
     return image
 @torch.no_grad()
-def evaluate(model, data_loader, device, metric_logger, iter):
+def evaluate(model, data_loader, device, metric_logger, iter, checkpointer):
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
@@ -175,10 +175,16 @@ def evaluate(model, data_loader, device, metric_logger, iter):
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
+
     coco_evaluator.synchronize_between_processes()
 
     # accumulate predictions from all images
     coco_evaluator.accumulate()
     coco_evaluator.summarize()
+    box_mAP = coco_evaluator.stats[-2] #
+    segm_mAP = coco_evaluator.stats[-1]
+    curr_avg_loss = metric_logger.loss.global_avg
+    #checkpointer.save(f"best_loss_{curr_avg_loss}", loss=curr_avg_loss)
+    checkpointer.save(f"best", loss=curr_avg_loss, box_mAP = box_mAP, segm_mAP = segm_mAP)
     torch.set_num_threads(n_threads)
     return coco_evaluator, iter

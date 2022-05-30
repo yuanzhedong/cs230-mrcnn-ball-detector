@@ -11,6 +11,9 @@ class CocoDataset(torch.utils.data.Dataset):
         self.transforms = transforms
         self.coco = COCO(annotation)
         self.img_ids = list(sorted(self.coco.imgs.keys()))
+        self.json_category_id_to_contiguous_id = {
+            v: i + 1 for i, v in enumerate(self.coco.getCatIds())
+        }
     def __getitem__(self, idx):
         '''
         Args:
@@ -49,7 +52,12 @@ class CocoDataset(torch.utils.data.Dataset):
         areas = [ann['area'] for ann in anns_obj]
 
         boxes = torch.as_tensor(bboxes, dtype=torch.float32)
-        labels = torch.ones(len(anns_obj), dtype=torch.int64)
+
+        labels = [obj["category_id"] for obj in anns_obj]
+        labels = [self.json_category_id_to_contiguous_id[c] for c in labels]
+        labels = torch.tensor(labels)
+
+        #labels = torch.ones(len(anns_obj), dtype=torch.int64)
         masks = torch.as_tensor(masks, dtype=torch.uint8)
         image_id = torch.tensor([idx])
         area = torch.as_tensor(areas)
